@@ -1,4 +1,4 @@
-# Phase 1: Initial Access & Execution Analysis
+  # Phase 1: Initial Access & Execution Analysis
 
 ## Project Overview
 
@@ -224,6 +224,7 @@ Immediately after execution, the process initiated outbound network communicatio
 This activity was correlated using:
 - LimaCharlie EDR network telemetry
 - Splunk SIEM logs
+- netstat -ano cmd.exe command
 
 <p align="center">
   <img src="images/splunk.png" alt="Splunk logs correlating C2 activity" width="800">
@@ -238,6 +239,17 @@ This activity was correlated using:
 <p align="center">
   <em>Figure 11: Additional SIEM evidence supporting C2 communication.</em>
 </p>
+
+<p align="center">
+  <img src="images/ano.png" alt="Additional windows C2 beacon proof" width="800">
+</p>
+
+<p align="center">
+  <em>
+    Figure 12: After suspected execution, a SOC analyst may verify network activity using <code>netstat -ano</code>.
+  </em>
+</p>
+
 
 ---
 
@@ -260,7 +272,7 @@ The following Detection & Response logic triggers on:
   <img src="images/rule.png" alt="EDR detection rule logic" width="800">
 </p>
 <p align="center">
-  <em>Figure 12: LimaCharlie detection rule used to identify the threat.</em>
+  <em>Figure 13: LimaCharlie detection rule used to identify the threat.</em>
 </p>
 
 ---
@@ -282,7 +294,7 @@ The host was intentionally left active to observe subsequent attack phases:
   <img src="images/contain.png" alt="EDR isolate host option" width="800">
 </p>
 <p align="center">
-  <em>Figure 13: EDR option to isolate the compromised host.</em>
+  <em>Figure 14: EDR option to isolate the compromised host.</em>
 </p>
 
 ---
