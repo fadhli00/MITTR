@@ -1,8 +1,8 @@
 # MITTR
 
-This repository contains a **phase-based adversary simulation lab** aligned with the **MITRE ATT&CK framework**.
+This repository documents a **phase-based adversary simulation lab** built in a **Proxmox homelab environment**.
 
-Each folder represents a phase of an attack, documented from both the **attacker** and **SOC analyst** perspectives, focusing on detection, investigation, and response using EDR and SIEM telemetry.
+The lab uses segmented networks, pfSense, and security tooling to simulate real attack behavior and document detection and investigation workflows aligned with the **MITRE ATT&CK framework**.
 
 ---
 
@@ -26,5 +26,3 @@ MITTR/
 
 - Initial Access (TA0001) — User Execution (T1204)
 - Execution (TA0002) — Malicious File Execution (T1204.002)
-
-More phases will be added to extend the attack chain.
