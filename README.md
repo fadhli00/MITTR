@@ -1,4 +1,4 @@
-# MITTR
+# MITTR — Adversary Simulation Lab (Homelab)
 
 This repository documents a **phase-based adversary simulation lab** built in a **Proxmox homelab environment**.
 
