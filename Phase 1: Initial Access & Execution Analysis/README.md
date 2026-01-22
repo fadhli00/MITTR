@@ -246,10 +246,19 @@ This activity was correlated using:
 
 <p align="center">
   <em>
-    Figure 12: After suspected execution, a SOC analyst may verify network activity using <code>netstat -ano</code>.
+    Figure 12: After suspected execution, verify network activity using <code>netstat -ano</code>.
   </em>
 </p>
 
+<p align="center">
+  <img src="images/ano2.png" alt="Additional windows C2 beacon proof" width="800">
+</p>
+
+<p align="center">
+  <em>
+    Figure 13: Verify network activity </code>.
+  </em>
+</p>
 
 ---
 
@@ -272,7 +281,7 @@ The following Detection & Response logic triggers on:
   <img src="images/rule.png" alt="EDR detection rule logic" width="800">
 </p>
 <p align="center">
-  <em>Figure 13: LimaCharlie detection rule used to identify the threat.</em>
+  <em>Figure 14: LimaCharlie detection rule used to identify the threat.</em>
 </p>
 
 ---
@@ -294,7 +303,7 @@ The host was intentionally left active to observe subsequent attack phases:
   <img src="images/contain.png" alt="EDR isolate host option" width="800">
 </p>
 <p align="center">
-  <em>Figure 14: EDR option to isolate the compromised host.</em>
+  <em>Figure 15: EDR option to isolate the compromised host.</em>
 </p>
 
 ---
