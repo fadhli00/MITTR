@@ -251,12 +251,22 @@ This activity was correlated using:
 </p>
 
 <p align="center">
-  <img src="images/ano2.png" alt="Additional windows C2 beacon proof" width="800">
+  <img src="images/ano2.png" width="800">
 </p>
 
 <p align="center">
   <em>
     Figure 13: Verify network activity </code>.
+  </em>
+</p>
+
+<p align="center">
+  <img src="images/unsigned.png" width="800">
+</p>
+
+<p align="center">
+  <em>
+    Figure 14: Unsigned application. </code>.
   </em>
 </p>
 
@@ -281,7 +291,7 @@ The following Detection & Response logic triggers on:
   <img src="images/rule.png" alt="EDR detection rule logic" width="800">
 </p>
 <p align="center">
-  <em>Figure 14: LimaCharlie detection rule used to identify the threat.</em>
+  <em>Figure 15: LimaCharlie detection rule used to identify the threat.</em>
 </p>
 
 ---
@@ -303,7 +313,7 @@ The host was intentionally left active to observe subsequent attack phases:
   <img src="images/contain.png" alt="EDR isolate host option" width="800">
 </p>
 <p align="center">
-  <em>Figure 15: EDR option to isolate the compromised host.</em>
+  <em>Figure 16: EDR option to isolate the compromised host.</em>
 </p>
 
 ---
