@@ -30,9 +30,19 @@ Executed on the victim machine via an active Sliver shell:
 **Stealth**
 - The registry value name **OneDriveUpdate** is chosen to resemble legitimate software behavior.
 
-📸 **Screenshot to include**
-- Sliver session showing successful execution of the `reg add` command
-- (Optional) Registry Editor view highlighting the `OneDriveUpdate` value
+<p align="center">
+  <img src="images/ragadd.png">
+</p>
+<p align="center">
+  <em>Figure 3.1: Sliver session showing successful execution of the <code>reg add</code> command</em>
+</p>
+
+<p align="center">
+  <img src="images/registry.png">
+</p>
+<p align="center">
+  <em>Figure 3.2: Registry Editor showing the malicious Run key entry</em>
+</p>
 
 ---
 
@@ -53,8 +63,12 @@ Executed on the victim machine via an active Sliver shell:
 **Observation**
 - The query captures `reg.exe` modifying the `CurrentVersion\Run` key.
 
-📸 **Screenshot to include**
-- Splunk search results showing the suspicious `reg.exe` command line
+<p align="center">
+  <img src="images/splunkreg.png">
+</p>
+<p align="center">
+  <em>Figure 3.3: Splunk results showing suspicious <code>reg.exe</code> command execution</em>
+</p>
 
 ---
 
@@ -64,9 +78,9 @@ Executed on the victim machine via an active Sliver shell:
 - The EDR detects the activity in real time by matching it against known persistence behavior.
 
 **Alert Details**
-- Detection Name: Potential Persistence Attempt Via Run Keys Using Reg.EXE
-- Source: refractionPOINT (Sigma rules)
-- Event Trigger: NEW_PROCESS
+- Detection Name: Potential Persistence Attempt Via Run Keys Using Reg.EXE  
+- Source: refractionPOINT (Sigma rules)  
+- Event Trigger: NEW_PROCESS  
 
 **Detection Logic**
 
@@ -84,8 +98,12 @@ Executed on the victim machine via an active Sliver shell:
 - Binary executed from a non-standard user directory
 - Activity confirmed as malicious
 
-📸 **Screenshot to include**
-- LimaCharlie alert details view
+<p align="center">
+  <img src="images/limareg.png">
+</p>
+<p align="center">
+  <em>Figure 3.4: LimaCharlie alert details for registry-based persistence</em>
+</p>
 
 ---
 
@@ -105,8 +123,19 @@ Persistence is established by creating a Windows Scheduled Task that executes th
 **Stealth**
 - The task name **WindowsCacheCleanup** is designed to appear as a routine system maintenance job.
 
-📸 **Screenshot to include**
-- Sliver shell output confirming scheduled task creation
+<p align="center">
+  <img src="images/schtask.png">
+</p>
+<p align="center">
+  <em>Figure 3.5: Sliver shell output confirming scheduled task creation</em>
+</p>
+
+<p align="center">
+  <img src="images/stealth.png">
+</p>
+<p align="center">
+  <em>Figure 3.6: Scheduled task name masquerading as a system maintenance job</em>
+</p>
 
 ---
 
@@ -123,24 +152,28 @@ Persistence is established by creating a Windows Scheduled Task that executes th
     | table _time, User, CommandLine, ParentImage
 
 **Analysis**
-- Task Name: WindowsCacheCleanup
-- Payload Location: `C:\Users\FADWIN10\Music\invoicee.exe`
-- Execution Schedule: Daily at 00:00
+- Task Name: WindowsCacheCleanup  
+- Payload Location: `C:\Users\FADWIN10\Music\invoicee.exe`  
+- Execution Schedule: Daily at 00:00  
 
 **Conclusion**
 - Persistence via scheduled task is confirmed.
 
-📸 **Screenshot to include**
-- Splunk results highlighting `schtasks.exe /create`
+<p align="center">
+  <img src="images/splunknscht.png">
+</p>
+<p align="center">
+  <em>Figure 3.7: Splunk results highlighting <code>schtasks.exe /create</code></em>
+</p>
 
 ---
 
 ### 3. LimaCharlie Detection
 
 **Alert Details**
-- Detection Name: Scheduled Task Creation Via Schtasks.EXE
-- Source: refractionPOINT
-- Event Trigger: NEW_PROCESS
+- Detection Name: Scheduled Task Creation Via Schtasks.EXE  
+- Source: refractionPOINT  
+- Event Trigger: NEW_PROCESS  
 
 **Detection Logic**
 
@@ -158,8 +191,12 @@ Persistence is established by creating a Windows Scheduled Task that executes th
 - Task name attempts to masquerade as a legitimate system process
 - Activity confirmed as malicious
 
-📸 **Screenshot to include**
-- LimaCharlie scheduled task alert
+<p align="center">
+  <img src="images/limasch.png">
+</p>
+<p align="center">
+  <em>Figure 3.8: LimaCharlie alert for scheduled task persistence</em>
+</p>
 
 ---
 
@@ -176,9 +213,19 @@ Persistence is achieved by placing the implant directly into the user’s Startu
 
     copy "C:\Users\FADWIN10\Music\invoicee.exe" "C:\Users\FADWIN10\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\Update.exe"
 
-📸 **Screenshot to include**
-- Sliver shell showing successful file copy
-- (Optional) Startup folder contents in Windows Explorer
+<p align="center">
+  <img src="images/startupfolder.png">
+</p>
+<p align="center">
+  <em>Figure 3.9: Startup folder contents in Windows Explorer</em>
+</p>
+
+<p align="center">
+  <img src="images/copy.png">
+</p>
+<p align="center">
+  <em>Figure 3.10: Sliver shell showing successful file copy to Startup folder</em>
+</p>
 
 ---
 
@@ -202,8 +249,12 @@ Persistence is achieved by placing the implant directly into the user’s Startu
 - Executables running directly from the Startup directory are uncommon in modern software
 - High-fidelity indicator of persistence via file drop
 
-📸 **Screenshot to include**
-- Splunk event showing `Update.exe` execution from Startup folder
+<p align="center">
+  <img src="images/update.png">
+</p>
+<p align="center">
+  <em>Figure 3.11: Splunk event showing <code>Update.exe</code> execution from Startup folder</em>
+</p>
 
 ---
 
@@ -216,12 +267,8 @@ Persistence is achieved by placing the implant directly into the user’s Startu
 
       schtasks /delete /tn "WindowsCacheCleanup" /f
 
-- Malicious Run key value removed from HKCU
-- Active `sliver.exe` process terminated
-
-📸 **Screenshot to include**
-- Scheduled task deletion output
-- Registry key removal confirmation
+- Malicious Run key value removed from HKCU  
+- Active `sliver.exe` process terminated  
 
 ---
 
@@ -243,4 +290,4 @@ Persistence is achieved by placing the implant directly into the user’s Startu
 - Red Team actions align with Splunk and LimaCharlie detections
 - Clear attack → detection → response workflow
 
-This phase documents realistic attacker persistence techniques along with enterprise-grade detection and response, suitable for a defensive-focused homelab portfolio.
+This phase documents realistic attacker persistence techniques alongside enterprise-grade detection and response, suitable for a defensive-focused homelab portfolio.
