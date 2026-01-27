@@ -1,18 +1,18 @@
 # Phase 3: Persistence (TA0003)
 
 ## Objective
-The attacker installs mechanisms to **maintain access across system restarts (reboots)**.
+The goal of this phase is to demonstrate how an attacker maintains access to a compromised system **across reboots and user logins**.
 
 **MITRE ATT&CK Techniques**
-- **T1547.001** – Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder
-- **T1053.005** – Scheduled Task/Job: Scheduled Task
+- **T1547.001** – Boot or Logon Autostart Execution (Registry Run Keys / Startup Folder)
+- **T1053.005** – Scheduled Task/Job (Scheduled Task)
 
 ---
 
 ## 🚩 Phase 3a: Registry Run Keys
 
 ### Scenario
-The attacker adds an entry to the **HKCU Run registry key** to automatically execute the implant whenever the user logs in.
+A persistence mechanism is established by adding an entry to the **HKCU Run registry key**, causing the implant to execute automatically whenever the user logs in.
 
 **Technique:** T1547.001 – Registry Run Keys
 
@@ -20,19 +20,19 @@ The attacker adds an entry to the **HKCU Run registry key** to automatically exe
 
 ### 1. Red Team Action (Sliver / CMD)
 
-Executed on the victim machine via a Sliver shell:
+Executed on the victim machine via an active Sliver shell:
 
     reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "OneDriveUpdate" /t REG_SZ /d "C:\Users\FADWIN10\Music\invoicee.exe" /f
 
 **Why this works**
-- The `Run` key is one of the most common Windows persistence mechanisms.
+- The `Run` key is a well-known and commonly abused persistence location in Windows environments.
 
 **Stealth**
-- The value name **OneDriveUpdate** blends in with legitimate software.
+- The registry value name **OneDriveUpdate** is chosen to resemble legitimate software behavior.
 
 📸 **Screenshot to include**
-- Sliver session showing successful `reg add` execution
-- (Optional) Registry Editor showing `OneDriveUpdate` in HKCU Run key
+- Sliver session showing successful execution of the `reg add` command
+- (Optional) Registry Editor view highlighting the `OneDriveUpdate` value
 
 ---
 
@@ -41,6 +41,8 @@ Executed on the victim machine via a Sliver shell:
 **Log Source**
 - Sysmon Event ID 1 (Process Creation)
 
+> In environments where Registry Event ID 13 is not enabled, process creation logs are commonly used to detect registry modifications.
+
 **Splunk Query**
 
     index="Fadhli-PC" EventCode=1
@@ -48,19 +50,25 @@ Executed on the victim machine via a Sliver shell:
     CommandLine="*add*" AND CommandLine="*\\Run*"
     | table _time, User, CommandLine, ParentImage
 
+**Observation**
+- The query captures `reg.exe` modifying the `CurrentVersion\Run` key.
+
 📸 **Screenshot to include**
-- Splunk results table showing `reg.exe` modifying `CurrentVersion\Run`
+- Splunk search results showing the suspicious `reg.exe` command line
 
 ---
 
 ### 3. LimaCharlie Detection
+
+**What LimaCharlie Observes**
+- The EDR detects the activity in real time by matching it against known persistence behavior.
 
 **Alert Details**
 - Detection Name: Potential Persistence Attempt Via Run Keys Using Reg.EXE
 - Source: refractionPOINT (Sigma rules)
 - Event Trigger: NEW_PROCESS
 
-**Rule Logic**
+**Detection Logic**
 
     op: and
     rules:
@@ -71,20 +79,20 @@ Executed on the victim machine via a Sliver shell:
         path: event/COMMAND_LINE
         value: \Software\Microsoft\Windows\CurrentVersion\Run
 
-**SOC Analyst Assessment**
-- High-fidelity alert
-- Binary added from `C:\Users\FADWIN10\Music\`
-- Confirmed malicious persistence
+**SOC Assessment**
+- High-confidence persistence alert
+- Binary executed from a non-standard user directory
+- Activity confirmed as malicious
 
 📸 **Screenshot to include**
-- LimaCharlie alert details page
+- LimaCharlie alert details view
 
 ---
 
 ## 🚩 Phase 3b: Scheduled Tasks
 
 ### Scenario
-The attacker creates a scheduled task to run the implant daily.
+Persistence is established by creating a Windows Scheduled Task that executes the implant on a recurring basis.
 
 **Technique:** T1053.005 – Scheduled Task
 
@@ -95,17 +103,17 @@ The attacker creates a scheduled task to run the implant daily.
     schtasks /create /sc daily /tn "WindowsCacheCleanup" /tr "C:\Users\FADWIN10\Music\invoicee.exe" /st 00:00 /f
 
 **Stealth**
-- Task name mimics system maintenance
+- The task name **WindowsCacheCleanup** is designed to appear as a routine system maintenance job.
 
 📸 **Screenshot to include**
-- Sliver shell showing task creation
+- Sliver shell output confirming scheduled task creation
 
 ---
 
 ### 2. Blue Team Detection – Splunk
 
 **Log Source**
-- Sysmon Event ID 1
+- Sysmon Event ID 1 (Process Creation)
 
 **Splunk Query**
 
@@ -114,14 +122,16 @@ The attacker creates a scheduled task to run the implant daily.
     CommandLine="*/create*"
     | table _time, User, CommandLine, ParentImage
 
-**Assessment**
+**Analysis**
 - Task Name: WindowsCacheCleanup
-- Payload in user Music directory
-- Scheduled daily at midnight
-- Confirmed malicious
+- Payload Location: `C:\Users\FADWIN10\Music\invoicee.exe`
+- Execution Schedule: Daily at 00:00
+
+**Conclusion**
+- Persistence via scheduled task is confirmed.
 
 📸 **Screenshot to include**
-- Splunk query results
+- Splunk results highlighting `schtasks.exe /create`
 
 ---
 
@@ -132,7 +142,7 @@ The attacker creates a scheduled task to run the implant daily.
 - Source: refractionPOINT
 - Event Trigger: NEW_PROCESS
 
-**Rule Logic**
+**Detection Logic**
 
     op: and
     rules:
@@ -143,10 +153,10 @@ The attacker creates a scheduled task to run the implant daily.
         path: event/COMMAND_LINE
         value: /create
 
-**SOC Analyst Assessment**
-- High-severity alert
-- Task masquerades as system process
-- Confirmed malicious
+**SOC Assessment**
+- High-severity alert generated
+- Task name attempts to masquerade as a legitimate system process
+- Activity confirmed as malicious
 
 📸 **Screenshot to include**
 - LimaCharlie scheduled task alert
@@ -156,7 +166,7 @@ The attacker creates a scheduled task to run the implant daily.
 ## 🚩 Phase 3c: Startup Folder
 
 ### Scenario
-The attacker drops the implant into the user's Startup folder.
+Persistence is achieved by placing the implant directly into the user’s Startup folder, ensuring execution upon login.
 
 **Technique:** T1547.001 – Startup Folder
 
@@ -167,15 +177,15 @@ The attacker drops the implant into the user's Startup folder.
     copy "C:\Users\FADWIN10\Music\invoicee.exe" "C:\Users\FADWIN10\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\Update.exe"
 
 📸 **Screenshot to include**
-- Sliver shell confirming file copy
-- (Optional) Startup folder view in Explorer
+- Sliver shell showing successful file copy
+- (Optional) Startup folder contents in Windows Explorer
 
 ---
 
 ### 2. Blue Team Detection – Splunk
 
 **Log Source**
-- Sysmon Event ID 1
+- Sysmon Event ID 1 (Process Creation)
 
 **Splunk Query**
 
@@ -184,16 +194,16 @@ The attacker drops the implant into the user's Startup folder.
     | table _time, User, CommandLine, ParentImage
 
 **Evidence**
-- Binary executed directly from Startup folder
-- Triggered on user login
-- Executed by explorer.exe
+- Executable launched directly from the Startup folder
+- Process triggered automatically during user login
+- Parent process identified as `explorer.exe`
 
-**Analyst Assessment**
-- Rare for legitimate apps
-- High-fidelity persistence indicator
+**Assessment**
+- Executables running directly from the Startup directory are uncommon in modern software
+- High-fidelity indicator of persistence via file drop
 
 📸 **Screenshot to include**
-- Splunk event showing Update.exe execution
+- Splunk event showing `Update.exe` execution from Startup folder
 
 ---
 
@@ -206,31 +216,31 @@ The attacker drops the implant into the user's Startup folder.
 
       schtasks /delete /tn "WindowsCacheCleanup" /f
 
-- Registry Run key cleaned
-- sliver.exe process terminated
+- Malicious Run key value removed from HKCU
+- Active `sliver.exe` process terminated
 
 📸 **Screenshot to include**
-- Task deletion output
-- Registry key removal
+- Scheduled task deletion output
+- Registry key removal confirmation
 
 ---
 
 ### Remediation
-- Full Autoruns scan (Sysinternals autorunsc)
-- User credential reset due to full compromise
+- Full persistence review performed using Sysinternals `autorunsc`
+- User credentials reset due to confirmed full user compromise
 
 ---
 
 ### Next Steps
-- Review for Lateral Movement (TA0008)
-- Investigate potential access to Domain Controller
+- Review logs for lateral movement (TA0008)
+- Assess potential access to high-value assets such as a Domain Controller
 
 ---
 
 ## ✅ Consistency Check
-- MITRE techniques correctly mapped
-- Payload path consistent across phases
-- Red Team actions align with Splunk & LimaCharlie detections
-- Clear attack → detect → respond narrative
+- MITRE techniques mapped correctly
+- Payload path consistent across all persistence mechanisms
+- Red Team actions align with Splunk and LimaCharlie detections
+- Clear attack → detection → response workflow
 
-**Portfolio Ready:** Suitable for GitHub homelab showcasing SOC detection & response maturity
+This phase documents realistic attacker persistence techniques along with enterprise-grade detection and response, suitable for a defensive-focused homelab portfolio.
