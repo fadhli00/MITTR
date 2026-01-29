@@ -326,6 +326,5 @@ This privilege escalation required:
 - No brute force  
 - No forced service restarts  
 
-Only misconfiguration awareness, patience, and normal Windows behavior.
 
 > “Sometimes the quietest attacks are the most effective.”
