@@ -46,7 +46,6 @@ If write access exists in any of these locations, execution can be hijacked.
 
 ## Analyst Insight — “Trap and Wait”
 
-> “I didn’t force the door open. I unlocked it and waited for the owner to walk through.”
 
 As a standard user, restarting services manually often results in **Access Denied**.  
 Instead of being noisy, a logic flaw is abused:
