@@ -327,4 +327,3 @@ This privilege escalation required:
 - No forced service restarts  
 
 
-> “Sometimes the quietest attacks are the most effective.”
