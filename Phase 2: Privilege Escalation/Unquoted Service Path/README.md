@@ -30,14 +30,15 @@ Escalate privileges from a Standard User (Medium Integrity) to `NT AUTHORITY\SYS
 
 The Windows service **VulnService** is configured with an **unquoted executable path** containing spaces:
 
-    C:\Program Files\Vulnerable Service\Common Files\Target.exe
+    C:\Users\Public\Vulnerable\Common Files\Target.exe
 
 Because the path is unquoted, Windows resolves executables in the following order:
 
-    C:\Program.exe
-    C:\Program Files\Vulnerable.exe
-    C:\Program Files\Vulnerable Service\Common.exe
-    C:\Program Files\Vulnerable Service\Common Files\Target.exe
+    C:\Users.exe
+    C:\Users\Public.exe
+    C:\Users\Public\Vulnerable.exe
+    C:\Users\Public\Vulnerable\Common.exe
+    C:\Users\Public\Vulnerable\Common Files\Target.exe
 
 If write access exists in any of these locations, execution can be hijacked.
 
@@ -76,10 +77,14 @@ A legitimate system action becomes the execution trigger.
 
 **Vulnerable Binary Path**
 
-    C:\Program Files\Vulnerable Service\Common Files\Target.exe
+    C:\Users\Public\Vulnerable\Common Files\Target.exe
 
 <p align="center">
   <img src="images/winpeas.png">
+</p>
+<p align="center"><p align="center">
+  
+  <img src="images/winpeas2.png">
 </p>
 <p align="center">
   <em>Figure 2.2: WinPEAS output highlighting the unquoted service path</em>
@@ -124,11 +129,11 @@ The payload is renamed to **Common.exe** to align with the unquoted path interce
 
 **Target Directory**
 
-    C:\Program Files\Vulnerable Service\
+    C:\Users\Public\Vulnerable\
 
 **Upload Command**
 
-    upload /home/kali/Common.exe "C:\\Program Files\\Vulnerable Service\\Common.exe"
+    upload /home/kali/Common.exe "C:\Users\Public\Vulnerable\Common.exe"
 
 <p align="center">
   <img src="images/upload.png">
@@ -213,7 +218,7 @@ A new Sliver session checks in automatically.
     NOT User="NT AUTHORITY\\SYSTEM"
 
 **Why this works**
-- Standard users writing executables to `Program Files` is abnormal
+- C:\Users\Public is expected to be writable by standard users.
 - File names align with known unquoted path breakpoints
 
 ---
@@ -260,7 +265,7 @@ A new Sliver session checks in automatically.
 
 2. **Patch**
 
-       sc config "VulnService" binPath= "\"C:\Program Files\Vulnerable Service\Common Files\Target.exe\""
+       sc config "VulnService" binPath= "\"C:\Users\Public\Vulnerable\Common Files\Target.exe""
 
 3. **Clean**
    - Remove malicious binary from disk
