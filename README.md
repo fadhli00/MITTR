@@ -13,8 +13,9 @@ MITTR/
 ├── Phase 1: Initial Access & Execution Analysis/
 ├── Phase 2: Privilege Escalation/
 ├── Phase 3: Persistence/
-├── Phase 4: Command and Control/
-├── Phase 5: Lateral Movement/
+├── Phase 4: Credential Access/
+├── Phase 5: Command and Control/
+├── Phase 6: Lateral Movement/
 └── README.md
 ```
 
@@ -22,7 +23,4 @@ MITTR/
 
 ## Current Focus
 
-**Phase 1 — Initial Access & Execution**
-
-- Initial Access (TA0001) — User Execution (T1204)
-- Execution (TA0002) — Malicious File Execution (T1204.002)
+**Phase 4 – Credential Access**
