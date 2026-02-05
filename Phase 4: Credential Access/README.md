@@ -1,5 +1,10 @@
 # Phase 4 — Credential Access
 
-This phase documents credential theft techniques used after initial compromise and demonstrates how a SOC detects and investigates LSASS credential dumping activity.
+This phase demonstrates credential theft techniques and how a SOC detects LSASS credential dumping activity.
 
-All techniques are mapped to MITRE ATT&CK and analyzed from both Red Team and Blue Team perspectives.
+## MITRE ATT&CK
+
+- TA0006 — Credential Access  
+- T1003 — OS Credential Dumping
+
+Each folder contains attack simulation, detection workflow, and SOC investigation notes.
