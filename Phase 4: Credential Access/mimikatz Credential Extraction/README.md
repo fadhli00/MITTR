@@ -80,7 +80,7 @@ This technique blends malicious behavior with legitimate administrative tooling.
 The Sysinternals Procdump tool is retrieved by the attacker and discreetly uploaded to the victim host. The utility is then used to create a memory dump for off-host parsing.
 
 <p align="center">
-  <img src="images/uwget.png">
+  <img src="images/wget.png">
 </p>
 <p align="center">
   <em>Figure 4.3: Procdump retrieved and staged from the attacker environment</em>
