@@ -24,18 +24,20 @@ The attacker interacts directly with LSASS memory through an active implant to r
 Credential dumping is executed from a SYSTEM-level session.  
 Privilege validation confirms SeDebugPrivilege is enabled prior to memory access.
 
+
+<p align="center">
+  <img src="images/system.png">
+</p>
+<p align="center">
+  <em>Figure 4.1: SYSTEM-level session confirmed and SeDebugPrivilege enabled</em>
+</p>
+
+
 **Command**
 ```bash
 getprivs
 mimikatz "privilege::debug" "sekurlsa::logonpasswords"
 ```
-
-<p align="center">
-  <img src="images/systemproof.png">
-</p>
-<p align="center">
-  <em>Figure 4.1: SYSTEM-level session confirmed and SeDebugPrivilege enabled</em>
-</p>
 
 <p align="center">
   <img src="images/offline.png">
@@ -84,7 +86,12 @@ The Sysinternals Procdump tool is retrieved by the attacker and discreetly uploa
   <img src="images/wget.png">
 </p>
 <p align="center">
-  <em>Figure 4.3: Procdump retrieved and staged from the attacker environment</em>
+
+  <p align="center">
+  <img src="images/systemproof.png">
+</p>
+<p align="center">
+  <em>Figure 4.3: Procdump retrieved and staged from the attacker environment and uploaded to the victim host afterward</em>
 </p>
 
 **Command**
