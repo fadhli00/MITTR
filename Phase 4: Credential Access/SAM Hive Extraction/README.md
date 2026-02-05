@@ -3,7 +3,7 @@
 ## Overview
 
 **Objective**  
-Obtain credential material from the compromised host to support privilege escalation and lateral movement. The attacker extracts password hashes and memory-resident credentials for offline cracking and credential reuse.
+Obtain credential material from the compromised host to support privilege escalation and lateral movement. Password hashes and memory-resident credentials are extracted for offline cracking and credential reuse.
 
 **MITRE ATT&CK Mapping**
 - **Tactic:** TA0006 – Credential Access  
@@ -11,7 +11,8 @@ Obtain credential material from the compromised host to support privilege escala
 - **T1003.001:** LSASS Memory  
 
 **Strategy**  
-Two realistic techniques are combined:
+Two credential theft techniques are demonstrated:
+
 1. Offline hash extraction via SAM hive export  
 2. In-memory credential dumping from LSASS  
 
@@ -20,7 +21,7 @@ Two realistic techniques are combined:
 ## Scenario A — SAM Hive Extraction
 
 **Analyst Context**  
-The SAM database stores local password hashes. The SYSTEM hive provides the decryption key. Exporting both enables offline credential recovery without generating authentication noise.
+The SAM database stores local password hashes. The SYSTEM hive contains the decryption key. Exporting both enables offline credential recovery without authentication attempts on the endpoint.
 
 ---
 
@@ -34,16 +35,28 @@ reg save HKLM\SAM C:\Users\Public\sam.save
 reg save HKLM\SYSTEM C:\Users\Public\system.save
 ```
 
-**[Screenshot required]**
+<p align="center">
+  <img src="images/regcommand.png">
+</p>
+<p align="center">
+  <em>Figure 4.1: Native Windows command used to export credential hives</em>
+</p>
 
-The attacker uses built-in Windows functionality to extract credential material.
+<p align="center">
+  <img src="images/result.png">
+</p>
+<p align="center">
+  <em>Figure 4.2: Exported SAM and SYSTEM hive files written to disk</em>
+</p>
+
+The attacker leverages built-in Windows functionality to obtain encrypted credential material.
 
 ---
 
 ## Detection & Hunting (Blue Team — Splunk)
 
 **Detection Logic**  
-Registry hive export targeting SAM/SYSTEM is a high-confidence credential theft signal.
+Manual export of credential registry hives is a high-confidence indicator of credential theft.
 
 **Query**
 ```
@@ -53,10 +66,15 @@ CommandLine="*save*" AND (CommandLine="*HKLM\\SAM*" OR CommandLine="*HKLM\\SYSTE
 | table _time, ComputerName, User, CommandLine
 ```
 
-**[Screenshot required]**
+<p align="center">
+  <img src="images/splunk.png">
+</p>
+<p align="center">
+  <em>Figure 4.3: Splunk telemetry showing registry hive export activity</em>
+</p>
 
 **Assessment**  
-Manual export of credential hives has no legitimate operational purpose and indicates malicious activity.
+Exporting SAM/SYSTEM hives has no legitimate operational purpose and strongly indicates credential harvesting.
 
 ---
 
@@ -65,17 +83,26 @@ Manual export of credential hives has no legitimate operational purpose and indi
 **Detection Trigger**  
 Process telemetry identifies reg.exe exporting sensitive registry hives.
 
-**[Screenshot required]**
+<p align="center">
+  <img src="images/edr1.png">
+</p>
+
+<p align="center">
+  <img src="images/edr2.png">
+</p>
+<p align="center">
+  <em>Figure 4.4: Endpoint telemetry confirming credential hive export behavior</em>
+</p>
 
 **Assessment**  
-Behavior aligns with credential harvesting prior to lateral movement.
+Behavior aligns with credential theft activity preceding lateral movement.
 
 ---
 
 ## Scenario B — LSASS Memory Dumping
 
 **Analyst Context**  
-LSASS holds active credentials in memory. Dumping it exposes reusable passwords and authentication material.
+LSASS stores active authentication material in memory. Dumping the process exposes reusable credentials.
 
 ---
 
@@ -90,14 +117,14 @@ rundll32.exe C:\Windows\System32\comsvcs.dll, MiniDump <LSASS_PID> C:\Users\Publ
 
 **[Screenshot required]**
 
-A native Windows DLL is abused to create a credential dump without external tooling.
+A native Windows DLL is abused to generate a credential memory dump.
 
 ---
 
 ## Detection & Hunting (Blue Team — Splunk)
 
 **Detection Logic**  
-Use of rundll32 with MiniDump parameters strongly indicates LSASS dumping.
+Use of rundll32 with MiniDump parameters indicates LSASS credential dumping.
 
 **Query**
 ```
@@ -132,13 +159,12 @@ Confirms active post-exploitation credential harvesting.
 
 **Actions**
 - Terminate suspicious processes  
-- Isolate host  
-- Reset affected credentials  
+- Isolate affected host  
+- Reset exposed credentials  
 - Investigate follow-on authentication activity  
 
 ---
 
 ## Key Takeaway
 
-Credential access was achieved using native Windows features without exploit kits or malware. Behavioral monitoring is essential to detect this form of stealth credential theft. This phase marks transition from access to credential control.
-
+Credential access was achieved using native Windows functionality without external malware. Detection depends on behavioral monitoring of credential storage access. This phase marks the transition from system compromise to credential control.
