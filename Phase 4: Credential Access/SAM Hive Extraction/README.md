@@ -125,12 +125,8 @@ rundll32.exe C:\Windows\System32\comsvcs.dll, MiniDump <LSASS_PID> C:\Users\Publ
   <img src="images/dump.png">
 </p>
 <p align="center">
-
-  
   <em>Figure 4.5: A native Windows DLL is abused to generate a credential memory dump.</em>
 </p>
-
-
 
 ---
 
