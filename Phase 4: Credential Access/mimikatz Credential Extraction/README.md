@@ -49,42 +49,6 @@ Live credential material is obtained without writing a dump file to disk.
 
 ---
 
-### Detection & Hunting (Blue Team — Splunk)
-
-**Detection Logic**  
-Unauthorized processes requesting handle access to LSASS strongly indicate credential dumping.
-
-**Query**
-```spl
-index=windows EventCode=10 
-TargetImage="C:\\Windows\\system32\\lsass.exe" 
-| stats count by _time, SourceImage, GrantedAccess, dest
-```
-
-**[Screenshot required]**
-
-**Assessment**  
-Non-system binaries accessing LSASS memory represent high-confidence credential theft behavior.
-
----
-
-### Endpoint Detection (Blue Team — LimaCharlie)
-
-**Detection Trigger**  
-Endpoint telemetry detects suspicious LSASS memory access behavior.
-
-<p align="center">
-  <img src="images/edr_live.png">
-</p>
-<p align="center">
-  <em>Figure 4.3: LimaCharlie telemetry showing live LSASS access</em>
-</p>
-
-**Assessment**  
-Behavior aligns with known credential dumping techniques and indicates active post-exploitation activity.
-
----
-
 ## Phase 4b — Offline Credential Dumping (Masqueraded Procdump)
 
 **Scenario**  
@@ -106,7 +70,7 @@ The Sysinternals tool is downloaded, renamed to appear benign, and uploaded to t
   <img src="images/systemproof.png">
 </p>
 <p align="center">
-  <em>Figure 4.4: Tool retrieved, renamed, and staged on the victim host</em>
+  <em>Figure 4.3: Tool retrieved, renamed, and staged on the victim host</em>
 </p>
 
 **Command**
@@ -122,21 +86,21 @@ sekurlsa::logonpasswords
   <img src="images/procdump.png">
 </p>
 <p align="center">
-  <em>Figure 4.5: Masqueraded binary dumping LSASS memory</em>
+  <em>Figure 4.4: Masqueraded binary dumping LSASS memory</em>
 </p>
 
 <p align="center">
   <img src="images/download.png">
 </p>
 <p align="center">
-  <em>Figure 4.6: Memory dump exfiltrated to attacker system</em>
+  <em>Figure 4.5: Memory dump exfiltrated to attacker system</em>
 </p>
 
 <p align="center">
   <img src="images/wine.png">
 </p>
 <p align="center">
-  <em>Figure 4.7: Offline credential parsing using Mimikatz</em>
+  <em>Figure 4.6: Offline credential parsing using Mimikatz</em>
 </p>
 
 Credential parsing occurs off-host to minimize endpoint visibility.
@@ -159,7 +123,7 @@ CommandLine="*-ma lsass.exe*"
   <img src="images/pdf46.png">
 </p>
 <p align="center">
-  <em>Figure 4.8: Behavioral detection of LSASS dumping despite masquerading</em>
+  <em>Figure 4.7: Behavioral detection of LSASS dumping despite masquerading</em>
 </p>
 
 **Assessment**  
@@ -176,7 +140,7 @@ Endpoint telemetry identifies a non-system process targeting LSASS memory regard
   <img src="images/edr.png">
 </p>
 <p align="center">
-  <em>Figure 4.9: LimaCharlie detection of LSASS dumping despite renamed binary</em>
+  <em>Figure 4.8: LimaCharlie detection of LSASS dumping despite renamed binary</em>
 </p>
 
 **Assessment**  
