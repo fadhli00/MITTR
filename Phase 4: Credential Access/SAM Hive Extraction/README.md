@@ -115,9 +115,22 @@ LSASS stores active authentication material in memory. Dumping the process expos
 rundll32.exe C:\Windows\System32\comsvcs.dll, MiniDump <LSASS_PID> C:\Users\Public\lsass.dmp full
 ```
 
-**[Screenshot required]**
+<p align="center">
+  <img src="images/lsass2.png">
+</p>
+<p align="center">
 
-A native Windows DLL is abused to generate a credential memory dump.
+  
+<p align="center">
+  <img src="images/dump.png">
+</p>
+<p align="center">
+
+  
+  <em>Figure 4.5: A native Windows DLL is abused to generate a credential memory dump.</em>
+</p>
+
+
 
 ---
 
@@ -134,10 +147,12 @@ CommandLine="*comsvcs.dll*MiniDump*"
 | table _time, ComputerName, User, CommandLine
 ```
 
-**[Screenshot required]**
-
-**Assessment**  
-Access to LSASS memory outside system processes signals credential theft.
+<p align="center">
+  <img src="images/splunk2.png">
+</p>
+<p align="center">
+  <em>Figure 4.6: Access to LSASS memory outside system processes signals credential theft.</em>
+</p>
 
 ---
 
@@ -146,10 +161,12 @@ Access to LSASS memory outside system processes signals credential theft.
 **Detection Trigger**  
 Suspicious LSASS access and dump creation observed in endpoint telemetry.
 
-**[Screenshot required]**
-
-**Assessment**  
-Confirms active post-exploitation credential harvesting.
+<p align="center">
+  <img src="images/limacharlie.png">
+</p>
+<p align="center">
+  <em>Figure 4.7: Confirms active post-exploitation credential harvesting.</em>
+</p>
 
 ---
 
