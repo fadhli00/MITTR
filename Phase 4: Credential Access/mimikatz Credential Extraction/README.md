@@ -1,15 +1,14 @@
-🚩 **Phase 4: Credential Access — Live Extraction, Offline Dumping, and Pass-the-Hash**
+🚩 **Phase 4: Credential Access — Live Extraction and Offline Dumping**
 
 ## Overview
 
 **Objective**  
-Extract and weaponize credential material from the compromised host. This phase demonstrates live credential dumping, stealth offline memory extraction, and reuse of stolen authentication hashes.
+Extract credential material from the compromised host for reuse in later attack phases. This phase demonstrates both live credential dumping and stealth offline memory extraction.
 
 **MITRE ATT&CK Mapping**
 - **T1003.001:** LSASS Memory  
-- **T1550.002:** Pass the Hash  
 
-Credential access transitions the attacker from system compromise to identity compromise.
+Credential access marks the transition from system compromise to identity compromise.
 
 ---
 
@@ -44,6 +43,8 @@ mimikatz "privilege::debug" "sekurlsa::logonpasswords"
 <p align="center">
   <em>Figure 4.2: Credentials extracted directly from LSASS memory</em>
 </p>
+
+Live credential material is obtained without writing a dump file to disk.
 
 ---
 
@@ -140,67 +141,23 @@ Use of legitimate administrative tooling against LSASS is strongly associated wi
 
 ---
 
-## Phase 4c — Pass the Hash (PtH)
-
-**Scenario**  
-Extracted NTLM hashes are reused directly for authentication without cracking.
-
-This enables immediate privilege reuse and lateral movement.
-
----
-
-### Attack Simulation (Red Team)
-
-**Command**
-```bash
-mimikatz "sekurlsa::pth /user:FADWIN10 /domain:FADHLI-PC /ntlm:<hash> /run:cmd.exe"
-```
-
-**[Screenshot required]**
-
-Authentication is performed using the stolen hash rather than a plaintext password.
-
----
-
-### Detection & Hunting (Blue Team — Splunk)
-
-**Detection Logic**  
-NewCredentials logons are a signature artifact of Pass-the-Hash behavior.
-
-**Query**
-```spl
-index=windows EventCode=4624 
-Logon_Type=9 
-Authentication_Package=Negotiate 
-Logon_Process=seclogo
-| table _time, TargetUserName, IpAddress, Logon_Type
-```
-
-**[Screenshot required]**
-
-**Assessment**  
-Logon Type 9 with seclogo indicates credential impersonation via hash reuse.
-
----
-
 ## SOC Decision & Response
 
-**Status:** ACTIVE CREDENTIAL COMPROMISE
+**Status:** CONFIRMED CREDENTIAL THEFT ACTIVITY
 
 **Immediate Containment**
-- Reset compromised credentials  
+- Reset exposed credentials  
 - Isolate affected host  
 - Remove credential dump artifacts  
-- Investigate lateral authentication activity  
+- Review authentication logs for suspicious reuse  
 
 ---
 
 ## Key Takeaway
 
-Credential access progressed from extraction to operational use:
+Credential access was achieved through both live and offline memory extraction:
 
-- Live credential dumping  
-- Stealth offline memory parsing  
-- Authentication via stolen hashes  
+- Direct LSASS credential dumping  
+- Stealth offline parsing workflow  
 
-At this stage, the attacker controls identity, not just the system. Detection depends on monitoring LSASS access, abuse of administrative tools, and abnormal authentication behavior.
+The attacker now possesses reusable authentication material. Detection relies on monitoring LSASS access patterns and abuse of administrative tools rather than traditional malware signatures.
