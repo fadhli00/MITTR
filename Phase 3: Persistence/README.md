@@ -282,12 +282,3 @@ Persistence is achieved by placing the implant directly into the user’s Startu
 - Review logs for lateral movement (TA0008)
 - Assess potential access to high-value assets such as a Domain Controller
 
----
-
-## ✅ Consistency Check
-- MITRE techniques mapped correctly
-- Payload path consistent across all persistence mechanisms
-- Red Team actions align with Splunk and LimaCharlie detections
-- Clear attack → detection → response workflow
-
-This phase documents realistic attacker persistence techniques alongside enterprise-grade detection and response, suitable for a defensive-focused homelab portfolio.
