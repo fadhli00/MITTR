@@ -1,5 +1,4 @@
-# Phase 5: Command and Control — Persistence & Ingress Tool Transfer
-
+# Phase 5: Command and Control 
 ---
 
 ## Overview
