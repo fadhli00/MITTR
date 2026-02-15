@@ -127,7 +127,7 @@ index=windows EventCode=3 Image="*\\Common.exe"
 | timechart span=1m count by Image
 ```
 
-📌 Screenshot Note:  
+📌 Screenshot Note: #PENDING  
 Insert Splunk timechart showing beacon pattern  
 Insert Splunk stats table
 
